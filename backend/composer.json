@@ -1,0 +1,12 @@
+{
+  "name": "ykshunter/api",
+  "description": "YKS Hunter Quiz API",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "YKS\\": "src/"
+    }
+  }
+}
