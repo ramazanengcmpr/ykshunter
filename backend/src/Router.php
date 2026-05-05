@@ -14,15 +14,15 @@ class Router {
     public function dispatch(): void {
         $segments = explode('/', ltrim($this->path, '/'));
 
-        // /api/{resource}/{action?}/{id?}
-        if ($segments[0] !== 'api') {
-            $this->send404();
-            return;
+        // Accept both /api/{resource}/... (when hosted behind an /api rewrite)
+        // and /{resource}/... (when the PHP server is the host root, e.g. Render).
+        if (($segments[0] ?? '') === 'api') {
+            array_shift($segments);
         }
 
-        $resource = $segments[1] ?? '';
-        $action   = $segments[2] ?? '';
-        $id       = $segments[3] ?? null;
+        $resource = $segments[0] ?? '';
+        $action   = $segments[1] ?? '';
+        $id       = $segments[2] ?? null;
 
         match($resource) {
             'quiz'    => $this->handleQuiz($action, $id),

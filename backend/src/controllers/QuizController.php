@@ -74,6 +74,10 @@ class QuizController {
             ->query("SELECT COUNT(*) FROM questions WHERE quiz_id = {$session['quiz_id']}")
             ->fetchColumn();
 
+        $quizStmt = $this->db->prepare('SELECT id, title, time_limit FROM quizzes WHERE id = ?');
+        $quizStmt->execute([$session['quiz_id']]);
+        $quiz = $quizStmt->fetch();
+
         $answers = json_decode($session['answers'], true) ?? [];
 
         echo json_encode([
@@ -82,6 +86,7 @@ class QuizController {
             'total'      => $total,
             'answered'   => $answers[$q['id']] ?? null,
             'session_id' => $session['id'],
+            'quiz'       => $quiz,
         ]);
     }
 
