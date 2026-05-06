@@ -27,7 +27,7 @@ class ResultController {
     public function detail(?string $id): void {
         if (!$id) { $this->error('ID gerekli'); return; }
         $stmt = $this->db->prepare(
-            'SELECT s.*, q.title as quiz_title, q.quiz_id, c.name as category_name
+            'SELECT s.*, q.title as quiz_title, c.name as category_name
              FROM sessions s
              LEFT JOIN quizzes q ON q.id = s.quiz_id
              LEFT JOIN categories c ON c.id = q.category_id
