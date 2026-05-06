@@ -77,12 +77,16 @@ class Database {
             user_id INTEGER,
             quiz_id INTEGER NOT NULL,
             answers TEXT DEFAULT '{}',
+            question_order TEXT,
             started_at TEXT DEFAULT ($now),
             finished_at TEXT,
             score REAL,
             total INTEGER,
             correct_count INTEGER
         )");
+
+        // Add question_order to existing tables (idempotent)
+        try { $db->exec("ALTER TABLE sessions ADD COLUMN question_order TEXT"); } catch (\Throwable $e) { /* already exists */ }
 
         $count = (int)$db->query('SELECT COUNT(*) FROM categories')->fetchColumn();
         if ($count === 0) {

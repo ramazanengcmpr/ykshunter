@@ -43,8 +43,16 @@ class QuizController {
         if (!$q) { $this->error('Quiz bulunamadı', 404); return; }
 
         $userId = $this->authUserId();
-        $stmt = $this->db->prepare('INSERT INTO sessions (user_id, quiz_id, answers) VALUES (?,?,?)');
-        $stmt->execute([$userId, $quizId, '{}']);
+
+        // Shuffle the quiz's question IDs so each session sees a fresh order
+        $qIdsStmt = $this->db->prepare('SELECT id FROM questions WHERE quiz_id = ? ORDER BY sort_order');
+        $qIdsStmt->execute([$quizId]);
+        $qIds = array_map('intval', $qIdsStmt->fetchAll(PDO::FETCH_COLUMN));
+        shuffle($qIds);
+        $order = json_encode($qIds);
+
+        $stmt = $this->db->prepare('INSERT INTO sessions (user_id, quiz_id, answers, question_order) VALUES (?,?,?,?)');
+        $stmt->execute([$userId, $quizId, '{}', $order]);
         $sessionId = $this->db->lastInsertId();
 
         echo json_encode(['session_id' => $sessionId, 'quiz' => $q]);
@@ -67,17 +75,30 @@ class QuizController {
         $session = $sess->fetch();
         if (!$session) { $this->error('Oturum bulunamadı', 404); return; }
 
-        $stmt = $this->db->prepare(
-            'SELECT id, body, option_a, option_b, option_c, option_d, option_e, sort_order
-             FROM questions WHERE quiz_id = ? ORDER BY sort_order LIMIT 1 OFFSET ?'
-        );
-        $stmt->execute([$session['quiz_id'], $index]);
-        $q = $stmt->fetch();
-        if (!$q) { $this->error('Soru bulunamadı', 404); return; }
+        $order = !empty($session['question_order']) ? json_decode($session['question_order'], true) : null;
 
-        $total = (int)$this->db
-            ->query("SELECT COUNT(*) FROM questions WHERE quiz_id = {$session['quiz_id']}")
-            ->fetchColumn();
+        if (is_array($order) && count($order) > 0) {
+            if (!isset($order[$index])) { $this->error('Soru bulunamadı', 404); return; }
+            $stmt = $this->db->prepare(
+                'SELECT id, body, option_a, option_b, option_c, option_d, option_e, sort_order
+                 FROM questions WHERE id = ?'
+            );
+            $stmt->execute([(int)$order[$index]]);
+            $q = $stmt->fetch();
+            $total = count($order);
+        } else {
+            // Legacy sessions created before shuffling was added
+            $stmt = $this->db->prepare(
+                'SELECT id, body, option_a, option_b, option_c, option_d, option_e, sort_order
+                 FROM questions WHERE quiz_id = ? ORDER BY sort_order LIMIT 1 OFFSET ?'
+            );
+            $stmt->execute([$session['quiz_id'], $index]);
+            $q = $stmt->fetch();
+            $total = (int)$this->db
+                ->query("SELECT COUNT(*) FROM questions WHERE quiz_id = {$session['quiz_id']}")
+                ->fetchColumn();
+        }
+        if (!$q) { $this->error('Soru bulunamadı', 404); return; }
 
         $quizStmt = $this->db->prepare('SELECT id, title, time_limit FROM quizzes WHERE id = ?');
         $quizStmt->execute([$session['quiz_id']]);
