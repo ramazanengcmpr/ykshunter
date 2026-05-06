@@ -72,6 +72,12 @@ class AuthController {
         echo json_encode(['user' => $user]);
     }
 
+    public function users(): void {
+        $stmt = $this->db->query('SELECT id, name, email, created_at FROM users ORDER BY id DESC');
+        $users = $stmt->fetchAll();
+        echo json_encode(['users' => $users, 'count' => count($users)]);
+    }
+
     private function json(): array {
         return json_decode(file_get_contents('php://input'), true) ?? [];
     }

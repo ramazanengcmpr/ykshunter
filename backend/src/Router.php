@@ -51,6 +51,7 @@ class Router {
             $action === 'register' && $this->method === 'POST' => $ctrl->register(),
             $action === 'login'    && $this->method === 'POST' => $ctrl->login(),
             $action === 'me'       && $this->method === 'GET'  => $ctrl->me(),
+            $action === 'users'    && $this->method === 'GET'  => $ctrl->users(),
             default => $this->send404(),
         };
     }
