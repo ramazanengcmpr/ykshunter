@@ -28,7 +28,7 @@ export const api = {
   categories: () => request('/quiz/categories'),
   quizzes: (cat) => request('/quiz/list' + (cat ? `?category=${cat}` : '')),
   startQuiz: (quizId) => request('/quiz/start', { method: 'POST', body: JSON.stringify({ quiz_id: quizId }) }),
-  question: (sessionId, index) => request(`/quiz/question/${sessionId}:${index}`),
+  question: (sessionId, index) => request(`/quiz/question/${sessionId}?index=${index}`),
   submitAnswer: (d) => request('/quiz/submit', { method: 'POST', body: JSON.stringify(d) }),
   finishQuiz: (sessionId) => request('/quiz/finish', { method: 'POST', body: JSON.stringify({ session_id: sessionId }) }),
 

@@ -53,8 +53,13 @@ class QuizController {
     public function question(?string $id): void {
         if (!$id) { $this->error('Soru ID gerekli'); return; }
 
-        // id can be session_id:question_index
-        [$sessionId, $index] = array_pad(explode(':', $id), 2, 0);
+        // id is the session_id; question index comes from ?index= (legacy: id can be "session:index")
+        if (str_contains($id, ':')) {
+            [$sessionId, $index] = array_pad(explode(':', $id), 2, 0);
+        } else {
+            $sessionId = $id;
+            $index = $_GET['index'] ?? 0;
+        }
         $index = (int)$index;
 
         $sess = $this->db->prepare('SELECT * FROM sessions WHERE id = ?');
