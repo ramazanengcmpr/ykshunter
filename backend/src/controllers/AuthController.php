@@ -28,9 +28,15 @@ class AuthController {
         if ($check->fetch()) { $this->error('Bu e-posta zaten kayıtlı'); return; }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash) VALUES (?,?,?)');
-        $stmt->execute([$name, $email, $hash]);
-        $id = $this->db->lastInsertId();
+        if ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql') {
+            $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash) VALUES (?,?,?) RETURNING id');
+            $stmt->execute([$name, $email, $hash]);
+            $id = (int)$stmt->fetchColumn();
+        } else {
+            $stmt = $this->db->prepare('INSERT INTO users (name, email, password_hash) VALUES (?,?,?)');
+            $stmt->execute([$name, $email, $hash]);
+            $id = (int)$this->db->lastInsertId();
+        }
 
         echo json_encode(['user' => ['id' => $id, 'name' => $name, 'email' => $email], 'token' => $hash]);
     }

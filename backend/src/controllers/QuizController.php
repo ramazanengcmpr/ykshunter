@@ -51,9 +51,16 @@ class QuizController {
         shuffle($qIds);
         $order = json_encode($qIds);
 
-        $stmt = $this->db->prepare('INSERT INTO sessions (user_id, quiz_id, answers, question_order) VALUES (?,?,?,?)');
-        $stmt->execute([$userId, $quizId, '{}', $order]);
-        $sessionId = $this->db->lastInsertId();
+        $driver = $this->db->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'pgsql') {
+            $stmt = $this->db->prepare('INSERT INTO sessions (user_id, quiz_id, answers, question_order) VALUES (?,?,?,?) RETURNING id');
+            $stmt->execute([$userId, $quizId, '{}', $order]);
+            $sessionId = (int)$stmt->fetchColumn();
+        } else {
+            $stmt = $this->db->prepare('INSERT INTO sessions (user_id, quiz_id, answers, question_order) VALUES (?,?,?,?)');
+            $stmt->execute([$userId, $quizId, '{}', $order]);
+            $sessionId = (int)$this->db->lastInsertId();
+        }
 
         echo json_encode(['session_id' => $sessionId, 'quiz' => $q]);
     }

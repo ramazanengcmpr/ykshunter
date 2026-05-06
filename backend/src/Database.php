@@ -5,11 +5,22 @@ class Database {
 
     public static function get(): PDO {
         if (self::$instance === null) {
-            $dsn = getenv('DATABASE_URL');
+            $url = getenv('DATABASE_URL');
 
-            if ($dsn) {
-                $dsn = preg_replace('/^postgres:\/\//', 'pgsql://', $dsn);
-                self::$instance = new PDO($dsn, null, null, [
+            if ($url) {
+                // PDO does not accept URL-style DSNs. Parse postgres://user:pass@host:port/db
+                // into a proper pgsql DSN and separate user/password args.
+                $p = parse_url($url);
+                if (!$p || empty($p['host']) || empty($p['path'])) {
+                    throw new \RuntimeException('Invalid DATABASE_URL: ' . $url);
+                }
+                $host = $p['host'];
+                $port = $p['port'] ?? 5432;
+                $db   = ltrim($p['path'], '/');
+                $user = $p['user'] ?? '';
+                $pass = isset($p['pass']) ? urldecode($p['pass']) : '';
+                $dsn  = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
+                self::$instance = new PDO($dsn, $user, $pass, [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ]);
