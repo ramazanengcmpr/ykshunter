@@ -29,9 +29,13 @@ export default function Navbar() {
         <Link to="/" style={{
           fontFamily: 'var(--font-display)',
           fontWeight: 800, fontSize: 20,
-          display: 'flex', alignItems: 'center', gap: 8,
+          display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: 22 }}>🎯</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="var(--accent)" strokeWidth="2" />
+            <circle cx="12" cy="12" r="4" stroke="var(--accent)" strokeWidth="2" />
+            <circle cx="12" cy="12" r="1.4" fill="var(--accent)" />
+          </svg>
           <span>YKS<span style={{ color: 'var(--accent)' }}>Hunter</span></span>
         </Link>
 
@@ -56,7 +60,7 @@ export default function Navbar() {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 13, color: 'var(--text2)' }}>👋 {user.name}</span>
+              <span style={{ fontSize: 13, color: 'var(--text2)' }}>{user.name}</span>
               <button onClick={handleLogout} style={{
                 padding: '6px 14px', borderRadius: 8, fontSize: 13,
                 background: 'var(--bg3)', color: 'var(--text2)',

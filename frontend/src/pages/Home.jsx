@@ -34,15 +34,21 @@ export default function Home() {
 
         <div className="container">
           <div className="fade-up" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '5px 16px', borderRadius: 20,
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            padding: '6px 18px', borderRadius: 20,
             border: '1px solid rgba(232,255,71,0.35)',
             background: 'rgba(232,255,71,0.07)',
             fontSize: 13, color: 'var(--accent)',
             fontFamily: 'var(--font-display)', fontWeight: 600,
+            letterSpacing: '0.02em',
             marginBottom: 28,
           }}>
-            🚀 YKS 2025'e hazır mısın?
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: 'var(--accent)',
+              boxShadow: '0 0 0 4px rgba(232,255,71,0.18)',
+            }} />
+            YKS 2025'e hazır mısın?
           </div>
 
           <h1 className="fade-up" style={{
